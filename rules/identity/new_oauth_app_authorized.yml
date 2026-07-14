@@ -1,0 +1,40 @@
+title: New Third-Party OAuth Application Authorized in Google Workspace
+id: 1a2b3c4d-5e6f-4a7b-8c9d-0e1f2a3b4c5d
+status: stable
+description: |
+    Detects when a user grants a new third-party OAuth application access
+    to their Google Workspace account/data. This is a common persistence
+    and data-exfiltration vector following account compromise or phishing,
+    and is frequently missed because it does not require a password reset
+    or trigger MFA.
+references:
+    - https://attack.mitre.org/techniques/T1550/
+    - https://attack.mitre.org/techniques/T1528/
+author: RoHaN
+date: 2026-07-01
+modified: 2026-07-01
+tags:
+    - attack.persistence
+    - attack.t1550
+    - attack.t1528
+logsource:
+    product: google_workspace
+    service: token
+detection:
+    selection:
+        event.name: 'authorize'
+    filter_known_good:
+        client_id:
+            - 'known-internal-app-id-1'
+            - 'known-internal-app-id-2'
+    condition: selection and not filter_known_good
+falsepositives:
+    - Legitimate adoption of a new approved SaaS tool (calendar, e-sign, scheduling apps)
+    - IT-approved integrations not yet added to the allowlist
+level: medium
+fields:
+    - actor.email
+    - client_id
+    - app.name
+    - scope.value
+    - event.time

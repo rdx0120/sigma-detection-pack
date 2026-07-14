@@ -1,0 +1,54 @@
+name: Detection Rule CI
+
+on:
+  pull_request:
+    paths:
+      - 'rules/**'
+      - 'tests/**'
+  push:
+    branches: [main]
+
+jobs:
+  validate-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          pip install pyyaml pytest sigma-cli
+
+      - name: Validate Sigma rule syntax
+        run: |
+          for f in $(find rules -name '*.yml'); do
+            echo "Validating $f"
+            python3 -c "import yaml,sys; yaml.safe_load(open('$f'))" || exit 1
+          done
+
+      - name: Convert rules to Elasticsearch query (sanity check, non-blocking on correlation rules)
+        run: |
+          sigma plugin install elasticsearch --yes || true
+          for f in rules/identity/password_spray.yml rules/identity/new_oauth_app_authorized.yml \
+                   rules/identity/mail_forwarding_rule_created.yml rules/identity/super_admin_role_granted.yml \
+                   rules/endpoint/suspicious_encoded_powershell.yml rules/endpoint/edr_agent_tampering.yml; do
+            echo "Converting $f"
+            sigma convert -t elasticsearch -p ecs_windows "$f" || echo "::warning::Conversion check failed for $f — review backend/pipeline mapping"
+          done
+
+      - name: Run detection unit tests
+        run: |
+          python3 -m pytest tests/ -v
+
+      - name: Check all rules have runbooks
+        run: |
+          for f in $(find rules -name '*.yml'); do
+            name=$(basename "$f" .yml)
+            if [ ! -f "runbooks/${name}.md" ]; then
+              echo "::warning::Missing runbook for $name — add runbooks/${name}.md"
+            fi
+          done
