@@ -118,3 +118,13 @@ gaps openly is part of the point of this repo.
 pip install pyyaml pytest
 python3 -m pytest tests/ -v
 ```
+## Related repositories
+
+Part of a set of security engineering projects:
+
+- [`threat-model-casebook`](https://github.com/rdx0120/threat-model-casebook) — STRIDE threat models across payments and a multi-tenant API
+- [`kev-epss-prioritizer`](https://github.com/rdx0120/kev-epss-prioritizer) — vulnerability prioritization by KEV/EPSS and asset context
+- [`one-person-security-program`](https://github.com/rdx0120/one-person-security-program) — running a security program as a team of one
+- [`YARAdec`](https://github.com/rdx0120/YARAdec) — a YARA rule decompiler
+- [`aws-detection-lab`](https://github.com/rdx0120/aws-detection-lab) — AWS detection engineering with adversary emulation
+- [`secure-pipeline`](https://github.com/rdx0120/secure-pipeline) — a reusable CI/CD security pipeline
